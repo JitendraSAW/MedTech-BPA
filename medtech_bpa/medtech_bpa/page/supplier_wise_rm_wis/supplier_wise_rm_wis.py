@@ -36,14 +36,17 @@ def get_planing_master_details(filters=None):
 	planning_master=frappe.db.sql("""SELECT name, date(from_date) as from_date , date(to_date) as to_date ,description  from `tabPlanning Master` where {0} """.format(get_filters_codition(filters)), as_dict=1)
 	pm_from_date = frappe.db.get_value('Planning Master', {'name' : planning_master[0].name}, 'from_date')
 	pm_to_date = frappe.db.get_value('Planning Master', {'name' : planning_master[0].name}, 'to_date')
-	bom_name = frappe.db.sql("""SELECT name, bom, amount from `tabPlanning Master Item` where planning_master_parent='{0}' and date>='{1}' and date<='{2}'""".format(planning_master[0].get('name'), planning_master[0].get('from_date'), planning_master[0].get('to_date')), as_dict=1)
-
+	bom_name = frappe.db.sql("""SELECT name, bom, amount,include_exploded_bom from `tabPlanning Master Item` where planning_master_parent='{0}' and date>='{1}' and date<='{2}'""".format(planning_master[0].get('name'), planning_master[0].get('from_date'), planning_master[0].get('to_date')), as_dict=1)
+	print("--------------------------bom_name--------",bom_name)
 	unic_bom = []
 	bom_items=[]
 	for row in bom_name:
 		if row.bom not in unic_bom:
 			unic_bom.append(row.bom)
-		bom_data = frappe.db.sql("""SELECT a.name, a.quantity, b.item_code, b.item_name, b.stock_qty from `tabBOM` a join `tabBOM Explosion Item` b on a.name=b.parent where a.name='{0}'""".format(row.bom), as_dict=1)
+		if row.include_exploded_bom == 1:
+			bom_data = frappe.db.sql("""SELECT a.name, a.quantity, b.item_code, b.item_name, b.stock_qty from `tabBOM` a join `tabBOM Explosion Item` b on a.name=b.parent where a.name='{0}'""".format(row.bom), as_dict=1)
+		else:
+			bom_data = frappe.db.sql("""SELECT a.name, a.quantity, b.item_code, b.item_name, b.stock_qty from `tabBOM` a join `tabBOM Item` b on a.name=b.parent where a.name='{0}'""".format(row.bom), as_dict=1)
 		
 		for bom in bom_data:
 			bom['planning_master_item'] = row.name
@@ -108,7 +111,7 @@ def get_planing_master_details(filters=None):
 	#calculate pending po qty
 	po_data = []
 	for row in new_data:
-		po_details = frappe.db.sql("""SELECT a.name, a.supplier, b.item_code,(b.qty-b.received_qty) as qty from `tabPurchase Order` a join `tabPurchase Order Item` b on a.name=b.parent where a.docstatus=1  and b.item_code='{0}' and a.status != 'Closed' and a.status != 'On Hold' """.format(row.get('item_code')), as_dict=1)
+		po_details = frappe.db.sql("""SELECT a.name, a.supplier, b.item_code,(b.qty-b.received_qty) as qty from `tabPurchase Order` a join `tabPurchase Order Item` b on a.name=b.parent where a.docstatus=1  and b.item_code='{0}' and a.status != 'Closed' and a.status != 'On Hold' and (b.qty-b.received_qty) > 0 """.format(row.get('item_code')), as_dict=1)
 
 		for po in po_details:
 			# accept_qty = frappe.db.get_values("Purchase Receipt Item", {'purchase_order':po.get('name'), 'item_code':po.get('item_code')}, ['item_code', 'actual_accepted_qty', 'parent', 'purchase_order'], as_dict=1)
@@ -379,6 +382,11 @@ def make_xlsx_file(renderd_data):
 		supplier_data=d.get('supplier')
 		if supplier_data:
 			for supplier in supplier_data:
+				cell = sheet.cell(row=row,column=col)
+				cell.value = d.get('item_code')+':'+d.get('item_name')
+				cell.alignment = cell.alignment.copy(horizontal="center", vertical="center")
+				
+
 				cell = sheet.cell(row=row,column=col+4)
 				cell.value = supplier.get('supplier')
 				cell.alignment = cell.alignment.copy(horizontal="center", vertical="center")
