@@ -182,13 +182,19 @@ def get_po_qty_detail(item_list, pm_from_date):
 	item_tuple = tuple(item_list)
 	if len(item_tuple):
 		# query = frappe.db.sql("SELECT pi.parent, pi.name, pi.item_code, case when pi.expected_delivery_date < '{0}' then (pi.qty - pi.received_qty) end as quantity from `tabPurchase Order` po join `tabPurchase Order Item` pi on pi.parent = po.name  where po.docstatus = 1  and po.per_received < 100  and pi.item_code in {1} and po.status != 'Closed' and po.status != 'On Hold' group by pi.item_code, pi.parent order by pi.name".format(pm_from_date, item_tuple), as_dict =1)
-		query = frappe.db.sql("SELECT pi.parent, pi.name, pi.item_code,(pi.qty - pi.received_qty) as quantity from `tabPurchase Order` po join `tabPurchase Order Item` pi on pi.parent = po.name  where po.docstatus = 1  and po.per_received < 100  and pi.item_code in {0} and po.status != 'Closed' and po.status != 'On Hold' group by pi.item_code, pi.parent order by pi.name".format(item_tuple), as_dict =1)
+		# query = frappe.db.sql("SELECT pi.parent, pi.name, pi.item_code,(pi.qty - pi.received_qty) as quantity from `tabPurchase Order` po join `tabPurchase Order Item` pi on pi.parent = po.name  where po.docstatus = 1  and po.per_received < 100  and pi.item_code in {0} and po.status != 'Closed' and po.status != 'On Hold' group by pi.item_code, pi.parent order by pi.name".format(item_tuple), as_dict =1)
+
+		query = frappe.db.sql("SELECT pi.parent, pi.name, pi.item_code,pi.qty,pi.received_qty from `tabPurchase Order` po join `tabPurchase Order Item` pi on pi.parent = po.name  where po.docstatus = 1  and po.per_received < 100  and pi.item_code in {0} and po.status != 'Closed' and po.status != 'On Hold' group by pi.item_code, pi.parent order by pi.name".format(item_tuple), as_dict =1)
+
 		item_dict = dict()
 		for item in query:
+			quantity = flt(item.qty - item.received_qty) if flt(item.qty - item.received_qty) > 0 else 0
 			if item.item_code in item_dict:
-				item_dict[item.item_code] = item_dict.get(item.item_code) + (item.quantity or 0)
+				# item_dict[item.item_code] = item_dict.get(item.item_code) + (item.quantity or 0)
+				item_dict[item.item_code] = item_dict.get(item.item_code) + (quantity or 0)
 			else:
-				item_dict[item.item_code] = item.quantity or 0
+				# item_dict[item.item_code] = item.quantity or 0
+				item_dict[item.item_code] = quantity or 0
 		return item_dict
 
 
@@ -265,7 +271,7 @@ def get_po_qty_date_wise(planning_master):
 	bom_name = frappe.db.sql("""SELECT name, bom, amount,include_exploded_bom from `tabPlanning Master Item` where planning_master_parent='{0}'""".format(planning_master), as_dict=1)
 
 	final_list = []
-	query = frappe.db.sql("SELECT pi.parent, pi.expected_delivery_date as schedule_date, pi.item_code, (pi.qty - pi.received_qty) as quantity from `tabPurchase Order` po join `tabPurchase Order Item` pi on pi.parent = po.name  join  `tabPlanning Master Item` pmi on pmi.date = pi.expected_delivery_date where po.docstatus = 1  and po.per_received < 100 and pmi.date = pi.expected_delivery_date and pmi.planning_master_parent = '{0}' group by pi.expected_delivery_date, pi.item_code, pi.parent order by pi.item_code".format(planning_master), as_dict =1)
+	query = frappe.db.sql("SELECT pi.parent, pi.expected_delivery_date as schedule_date, pi.item_code, (pi.qty - pi.received_qty) as quantity  from `tabPurchase Order` po join `tabPurchase Order Item` pi on pi.parent = po.name  join  `tabPlanning Master Item` pmi on pmi.date = pi.expected_delivery_date where po.docstatus = 1  and po.per_received < 100 and pmi.date = pi.expected_delivery_date and pmi.planning_master_parent = '{0}' and po.status != 'Closed' and po.status != 'On Hold' group by pi.expected_delivery_date, pi.item_code, pi.parent order by pi.item_code".format(planning_master), as_dict =1)
 	for item in query:
 		final_list.append(item)
 	
@@ -289,12 +295,12 @@ def get_po_qty_date_wise(planning_master):
 		if item.item_code in req_dict:
 			update_dict = req_dict.get(item.item_code)
 			if item.schedule_date in update_dict:
-				update_dict[item.schedule_date] = update_dict.get(item.schedule_date) + item.quantity
+				update_dict[item.schedule_date] = update_dict.get(item.schedule_date) + item.quantity if item.quantity > 0 else 0
 			else:
-				update_dict[item.schedule_date] = item.quantity
+				update_dict[item.schedule_date] = item.quantity if item.quantity > 0 else 0
 		else:
 			req_dict[item.item_code] = {
-				item.schedule_date : item.quantity
+				item.schedule_date : item.quantity if item.quantity > 0 else 0
 			}
 
 	pm_date_list = get_pm_details(planning_master)
