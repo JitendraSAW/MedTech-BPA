@@ -12,7 +12,7 @@ def execute(filters=None):
 def get_data(filters):
 	query_data = frappe.db.sql("""
 		SELECT
-			pri.item_name as "pri_item_name",
+			pri.item_name as "pri_item_name",pri.item_code as "pri_item_code",
 			pr.supplier as "pr_supplier",
 			pri.purchase_order as "po_no",
 			pr.name as "vir_no",
@@ -82,11 +82,13 @@ def get_data(filters):
 		where {0} and pr.is_return != 1 AND pr.docstatus = 1
 		order by pr.creation
 			""".format(validate_filters(filters)), as_dict = 1)
+	print("****************", query_data)
 	
 
 	final_data = []
 	for row in query_data:
 		row_data = []
+		row_data.append(row.get('pri_item_code'))
 		row_data.append(row.get('pri_item_name'))
 		row_data.append(row.get('pr_supplier'))
 		row_data.append(row.get('po_no'))
@@ -125,6 +127,12 @@ def validate_filters(filters):
 def get_columns():
 	
 	return [
+		{
+			"fieldname": "pri_item_code",
+			"label": _("Item Code"),
+			"fieldtype": "Data",
+			"width": 226
+		},
 		{
 			"fieldname": "pri_item_name",
 			"label": _("Item Name"),

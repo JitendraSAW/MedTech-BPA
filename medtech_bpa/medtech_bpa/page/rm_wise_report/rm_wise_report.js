@@ -104,7 +104,9 @@ frappe.rm_wise_report = Class.extend({
 					}
 					$("#planning_master").val(planning_master.get_value())
 					me.planning_master_list = planning_master.get_value()
-					me.base_data()
+					if (me.planning_master != ""){
+						me.base_data()
+					}
 				}
 	     	},
 	     	only_input: false,

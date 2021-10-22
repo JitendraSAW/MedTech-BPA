@@ -17,14 +17,11 @@
   "parentfield": null,
   "parenttype": null,
   "pdf_page_size": "A4",
-  "port": 631,
   "print_style": "Modern",
   "print_taxes_with_zero_amount": 0,
   "print_uom_after_quantity": 0,
-  "printer_name": null,
   "repeat_header_footer": 1,
   "send_print_as_pdf": 1,
-  "server_ip": "localhost",
   "with_letterhead": 1
  }
 ]
