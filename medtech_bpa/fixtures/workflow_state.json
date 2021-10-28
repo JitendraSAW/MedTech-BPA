@@ -2,6 +2,18 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2021-05-20 09:52:37.417799",
+  "name": "AKSHAY",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "style": "",
+  "workflow_state_name": "AKSHAY"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
   "icon": "question-sign",
   "modified": "2021-01-04 17:07:35.313429",
   "name": "Pending",

@@ -45,7 +45,6 @@ from openpyxl.utils.cell import get_column_letter
 
 @frappe.whitelist()
 def get_rm_report_details(planning_master= ''):
-
 	precision = frappe.db.get_singles_value('System Settings', 'float_precision')
 	# planning master
 	pm_dates = get_pm_details(planning_master)
@@ -113,7 +112,6 @@ def get_rm_report_details(planning_master= ''):
 	data['to_date'] = (pm_to_date).strftime('%d-%m-%Y') if pm_to_date else ''
 	data['description'] = pm_description if pm_description else ''
 	data['planning_master'] = planning_master
-
 	return data
 
 

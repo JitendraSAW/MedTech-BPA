@@ -13,8 +13,7 @@ frappe.rm_wise_report = Class.extend({
 		me.wrapper_page = wrapper.page
 		// '.layout-main-section-wrapper' class for blank dashboard page
 		this.page = $(wrapper).find('.layout-main-section-wrapper');
-		$(frappe.render_template('rm_wise_report_html')).appendTo(this.page);
-		me.base_data()		
+		$(frappe.render_template('rm_wise_report_html')).appendTo(this.page);	
 		me.planning_master()
 		me.from_date()
 		me.to_date()
@@ -22,7 +21,6 @@ frappe.rm_wise_report = Class.extend({
 		// me.po()
 		// me.item()
 		// me.po_toc_status()
-
 		$(".export").click(function(){
 			me.get_data_for_export()
 		});
@@ -69,7 +67,7 @@ frappe.rm_wise_report = Class.extend({
 					planning_master : me.planning_master_list
 				},
 				callback: function(r) {
-						data=r.message
+					data=r.message
 				}
 			})
 			me.display_table(data)
@@ -104,10 +102,11 @@ frappe.rm_wise_report = Class.extend({
 						}
 					})
 					}
-					
 					$("#planning_master").val(planning_master.get_value())
 					me.planning_master_list = planning_master.get_value()
-					me.base_data()
+					if (me.planning_master != ""){
+						me.base_data()
+					}
 				}
 	     	},
 	     	only_input: false,
