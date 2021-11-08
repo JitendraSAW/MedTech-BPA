@@ -4877,5 +4877,22 @@
   "property_type": "Int",
   "row_name": null,
   "value": "1"
+ },
+ {
+  "default_value": null,
+  "doc_type": "Production Pick List Item",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "warehouse",
+  "modified": "2021-11-08 10:21:59.656007",
+  "name": "Production Pick List Item-warehouse-read_only",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "property": "read_only",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "0"
  }
 ]
