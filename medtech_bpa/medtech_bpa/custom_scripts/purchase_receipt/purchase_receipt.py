@@ -53,16 +53,16 @@ def before_submit(doc, method):
 	qc_disable_items = get_qc_disable_items(doc.supplier)
 	get_warehouse = frappe.get_single('MedTech Settings')
 	qc_check = 0
-	if doc.is_return == 0:
-		for item in doc.items:
-			if item.item_code in qc_disable_items:
-				item.warehouse = get_warehouse.rm_warehouse
-			elif item.quality_inspection:
-				item.warehouse = get_warehouse.rm_warehouse
-				qc_check = 1
-			else:
-				item.warehouse = get_warehouse.qc_warehouse
-		doc.set_warehouse = get_warehouse.rm_warehouse if qc_check == 1 else get_warehouse.qc_warehouse
+	# if doc.is_return == 0:
+	# 	for item in doc.items:
+	# 		if item.item_code in qc_disable_items:
+	# 			item.warehouse = get_warehouse.rm_warehouse
+	# 		elif item.quality_inspection:
+	# 			item.warehouse = get_warehouse.rm_warehouse
+	# 			qc_check = 1
+	# 		else:
+	# 			item.warehouse = get_warehouse.qc_warehouse
+	# 	doc.set_warehouse = get_warehouse.rm_warehouse if qc_check == 1 else get_warehouse.qc_warehouse
 		
 
 def set_po_item_rate(doc):
@@ -75,7 +75,6 @@ def set_po_item_rate(doc):
 
 
 def before_save(doc,method):
-	
 	# po_ref = 0
 	# for item in doc.items:
 	# 	if item.purchase_order:
@@ -96,6 +95,7 @@ def map_pr_qty_to_po_qty(doc):
 		item_temp_qty = item.qty
 		for po in po_list_data:
 			po_temp_qty = po.get("remaining_qty")
+			print("}}}}}}}}}}}}}}}}}}}}}}}}}", po_temp_qty)
 			if po.get("item_code") == item.item_code and po_temp_qty > 0 and item_temp_qty > 0:
 				if item_temp_qty > po_temp_qty:
 					qc_name = frappe.db.get_value("Quality Inspection",{'reference_name':doc.name,'item_code':item.item_code},'name')
@@ -124,7 +124,9 @@ def map_pr_qty_to_po_qty(doc):
 						'asset_category':asset_category
 					}
 					item_temp_qty = item_temp_qty  - po_temp_qty
+					print("\n\niiiiii", item_temp_qty)
 					po_temp_qty = po_temp_qty -item_temp_qty
+					print("\n\nuuuuuu", po_temp_qty)
 					po['remaining_qty'] = po_temp_qty
 					item_list.append(temp)
 
@@ -145,6 +147,7 @@ def map_pr_qty_to_po_qty(doc):
 						'cost_center':item.cost_center,
 						'stock_uom': item.stock_uom,
 						'qty':  item_temp_qty,
+						'billed_qty':  item.qty,
 						'physically_verified_quantity':item.physically_verified_quantity,
 						'received_qty':item_temp_qty,
 						'purchase_order' : po.get('name'),
@@ -223,7 +226,9 @@ def get_purchase_order(supplier):
 			from `tabPurchase Order Item` pi join `tabPurchase Order` po on pi.parent = po.name 
 			where po.supplier = '{0}' and ((pi.qty - pi.received_qty) - pi.returned_qty) > 0 and po.docstatus = 1 and po.status not in ('Closed', 'Completed', 'To Bill') 
 			order by po.transaction_date,po.modified asc'''.format(supplier)
+	print("*********************", query)
 	po_list = frappe.db.sql(query, as_dict=1,debug=1)
+	print("}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}", po_list)
 	return po_list
 
 
