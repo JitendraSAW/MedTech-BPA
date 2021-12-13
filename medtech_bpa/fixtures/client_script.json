@@ -2,6 +2,19 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Payment Reconciliation",
+  "enabled": 0,
+  "modified": "2021-10-04 10:33:27.655565",
+  "name": "Payment Reconciliation-Form",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "script": "frappe.ui.form.on('Payment Reconciliation', {\n\trefresh(frm) {\n\t}\n})\nfrappe.ui.form.on('Payment Reconciliation Invoice', {\n\trefresh(frm) {\n\t{\n\tcur_frm.add_fetch(\"purchase_invoice\", \"bill_no\", \"bill_no\");\n\t}\n\t}\n})",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Gate Pass Entry",
   "enabled": 0,
   "modified": "2021-04-02 13:50:19.203815",
